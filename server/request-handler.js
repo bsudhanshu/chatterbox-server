@@ -51,7 +51,10 @@ var requestHandler = function(request, response) {
       response.end(JSON.stringify(responseBody));
   } else if (request.method === 'POST') {
       request.on('data', function(chunk){
-        results.push(chunk);
+        var test = JSON.parse(chunk);
+        console.log(typeof chunk, '!!!!!!!!!!!!');
+        console.log(typeof test, '!!!!!!!!!!!!!');
+        results.push(test);
         response.writeHead(201, 'Request posted to server')
       });
       request.on('end', function(){

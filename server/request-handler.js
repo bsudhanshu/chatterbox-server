@@ -11,7 +11,9 @@ this file and include it in basic-server.js so that it actually works.
 *Hint* Check out the node module documentation at http://nodejs.org/api/modules.html.
 
 **************************************************************/
-var results = [];
+var querystring = require('querystring');
+var storage = [];
+var count = 0;
 var requestHandler = function(request, response) {
   // Request and Response come from node's http module.
   //
@@ -35,10 +37,7 @@ var requestHandler = function(request, response) {
   headers['Content-Type'] = 'application/json';
 
   var responseBody = {
-    headers: headers,
-    method: request.method, 
-    url: request.url, 
-    results: results
+    results: storage
   };
 
   if (request.url !== "/classes/messages") {
@@ -47,21 +46,37 @@ var requestHandler = function(request, response) {
   }
 
   if (request.method === 'GET') { 
+
+      //console.log(a, 'arr buff toString');
       response.writeHead(statusCode, headers);
+      
+
+      //console.log(results, 'parsed results');
+
+      //console.log("responseBody: ", responseBody);
+      //console.log("results: ", results);
+
       response.end(JSON.stringify(responseBody));
+
+      //response.end(responseBody);
   } else if (request.method === 'POST') {
-      request.on('data', function(chunk){
-        var test = JSON.parse(chunk);
-        console.log(typeof chunk, '!!!!!!!!!!!!');
-        console.log(typeof test, '!!!!!!!!!!!!!');
-        results.push(test);
-        response.writeHead(201, 'Request posted to server')
+      var results = [];
+      request.on('data', function(chunk){      
+      results.push(chunk);
       });
       request.on('end', function(){
-        // results = Buffer.concat(results).toString();
-        response.end();
+        results = Buffer.concat(results).toString();
+        results = querystring.parse(results);
+        count++;
+        results.objectId = count;
+        storage.push(results);
+        response.writeHead(201, headers)
+        response.end(JSON.stringify(responseBody));
       });
-   } 
+   } else if (request.method === 'OPTIONS') {
+      response.writeHead(statusCode, headers);
+      response.end();
+   }
 
   // The outgoing status.
  
@@ -87,9 +102,6 @@ var requestHandler = function(request, response) {
   //
   // Calling .end "flushes" the response's internal buffer, forcing
   // node to actually send all the data over to the client.
-  
-  
-
   
 };
 

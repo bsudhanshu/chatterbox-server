@@ -3,7 +3,7 @@ var app = {
 
   //TODO: The current 'handleUsernameClick' function just toggles the class 'friend'
   //to all messages sent by the user
-  server: 'http://127.0.0.1:3000',
+  server: 'http://127.0.0.1:3000/classes/messages',
   username: 'anonymous',
   roomname: 'lobby',
   lastMessageId: 0,
@@ -31,22 +31,24 @@ var app = {
 
     // Poll for new messages
     setInterval(function() {
+      console.log("SetInterval is fetching")
       app.fetch(true);
     }, 3000);
   },
 
   send: function(message) {
     app.startSpinner();
-
+    console.log("sending message");
     // POST the message to the server
     $.ajax({
       url: app.server,
       type: 'POST',
       data: message,
+      contentType: 'application/json',
       success: function (data) {
         // Clear messages input
         app.$message.val('');
-
+        console.log("successfully sent")
         // Trigger a fetch to update the messages, pass true to animate
         app.fetch();
       },
@@ -60,11 +62,12 @@ var app = {
     $.ajax({
       url: app.server,
       type: 'GET',
-      data: { order: '-createdAt' },
       contentType: 'application/json',
       success: function(data) {
         // Don't bother if we have nothing to work with
-        if (!data.results || !data.results.length) { return; }
+        // data = JSON.parse(data);
+        console.log("fetching successfully")
+        if (!data.results || !data.results.length) { app.stopSpinner(); return; }
 
         // Store messages for caching later
         app.messages = data.results;
@@ -78,6 +81,7 @@ var app = {
           app.renderRoomList(data.results);
 
           // Update the UI with the fetched messages
+          console.log("About to call renderMessage", data.results);
           app.renderMessages(data.results, animate);
 
           // Store the ID of the most recent message
@@ -97,6 +101,7 @@ var app = {
   renderMessages: function(messages, animate) {
     // Clear existing messages`
     app.clearMessages();
+    console.log("About to stop spinning");
     app.stopSpinner();
     if (Array.isArray(messages)) {
       // Add all fetched messages that are in our current room
@@ -119,6 +124,7 @@ var app = {
 
     if (messages) {
       var rooms = {};
+
       messages.forEach(function(message) {
         var roomname = message.roomname;
         if (roomname && !rooms[roomname]) {

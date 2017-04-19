@@ -46,19 +46,8 @@ var requestHandler = function(request, response) {
   }
 
   if (request.method === 'GET') { 
-
-      //console.log(a, 'arr buff toString');
       response.writeHead(statusCode, headers);
-      
-
-      //console.log(results, 'parsed results');
-
-      //console.log("responseBody: ", responseBody);
-      //console.log("results: ", results);
-
       response.end(JSON.stringify(responseBody));
-
-      //response.end(responseBody);
   } else if (request.method === 'POST') {
       var results = [];
       request.on('data', function(chunk){      
